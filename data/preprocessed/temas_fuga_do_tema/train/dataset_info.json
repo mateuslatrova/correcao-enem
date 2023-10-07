@@ -1,0 +1,42 @@
+{
+  "builder_name": "csv",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "csv",
+  "dataset_size": 193610,
+  "description": "",
+  "download_checksums": {
+    "/home/mateuslatrova/dev/correcao-enem/data/raw/temas.csv": {
+      "num_bytes": 193400,
+      "checksum": null
+    }
+  },
+  "download_size": 193400,
+  "features": {
+    "topic_id": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "topic_text": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 387010,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 193610,
+      "num_examples": 44,
+      "dataset_name": "csv"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "_data_files": [
+    {
+      "filename": "data-00000-of-00001.arrow"
+    }
+  ],
+  "_fingerprint": "cedc3675b03fda11",
+  "_format_columns": [
+    "essay_id",
+    "essay_text",
+    "is_artificial",
+    "label",
+    "topic_id"
+  ],
+  "_format_kwargs": {},
+  "_format_type": null,
+  "_output_all_columns": false,
+  "_split": null
+}

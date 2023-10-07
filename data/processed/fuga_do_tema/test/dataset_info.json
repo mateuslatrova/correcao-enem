@@ -1,0 +1,28 @@
+{
+  "citation": "",
+  "description": "",
+  "features": {
+    "essay_id": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "essay_text": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "topic_id": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "topic_text": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "label": {
+      "dtype": "int64",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": ""
+}
