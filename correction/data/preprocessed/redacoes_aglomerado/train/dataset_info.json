@@ -1,0 +1,46 @@
+{
+  "builder_name": "csv",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "csv",
+  "dataset_size": 1270051,
+  "description": "",
+  "download_checksums": {
+    "/home/mateuslatrova/dev/correcao-enem/correction/data/raw/redacoes.csv": {
+      "num_bytes": 1267932,
+      "checksum": null
+    }
+  },
+  "download_size": 1267932,
+  "features": {
+    "essay_id": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "essay_text": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "second_grade": {
+      "dtype": "int64",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 2537983,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 1270051,
+      "num_examples": 385,
+      "dataset_name": "csv"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}
