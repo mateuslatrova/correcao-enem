@@ -1,0 +1,16 @@
+base_dirpath: "./correction"
+
+checkpoint:  neuralmind/bert-base-portuguese-cased
+
+raw_files_dirpath: data/raw
+preprocessed_files_dirpath: data/preprocessed
+processed_files_dirpath: data/processed
+
+raw_files_extension: csv
+
+raw_train_filename: redacoes
+raw_test_filename: redacoes_grande
+
+preprocessed_dirname: redacoes_aglomerado
+
+processed_dirname: redacoes_aglomerado
