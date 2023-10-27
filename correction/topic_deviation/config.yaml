@@ -1,0 +1,13 @@
+base_dirpath: "./correction"
+
+checkpoint:  neuralmind/bert-base-portuguese-cased
+
+raw_files_extension: csv
+
+raw_essay_filename: redacoes
+raw_prompt_filename: temas
+
+essay_preprocessed_dirname: redacoes_fuga_do_tema
+prompt_preprocessed_dirname: temas_fuga_do_tema
+
+processed_dirname: fuga_do_tema
