@@ -4,8 +4,14 @@
       "filename": "data-00000-of-00001.arrow"
     }
   ],
-  "_fingerprint": "ea50adac1989b0b6",
-  "_format_columns": null,
+  "_fingerprint": "999937be9272d02d",
+  "_format_columns": [
+    "essay_id",
+    "essay_text",
+    "is_artificial",
+    "label",
+    "topic_id"
+  ],
   "_format_kwargs": {},
   "_format_type": null,
   "_output_all_columns": false,
