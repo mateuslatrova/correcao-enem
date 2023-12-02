@@ -1,4 +1,4 @@
-base_dirpath: "./correction"
+base_dirpath: "correction"
 
 checkpoint:  neuralmind/bert-base-portuguese-cased
 
