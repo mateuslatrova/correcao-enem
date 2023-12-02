@@ -1,9 +1,9 @@
-from correction.cluster_of_words.evaluator import ClusterOfWordsEvaluator
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
+
+from correction.cluster_of_words.evaluator import ClusterOfWordsEvaluator
 
 
 class PlotterForClusterOfWords:
@@ -91,6 +91,7 @@ class PlotterForClusterOfWords:
             matrix = confusion_matrix(df["true_label"], df["predicted_label"])
 
             plt.figure(figsize=(8, 6))
+            sns.set(font_scale=1.8)
             sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", cbar=False)
 
             plt.xlabel("Predicted")
