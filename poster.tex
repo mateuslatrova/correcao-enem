@@ -1,0 +1,304 @@
+% Authors: Nelson Lago, Arthur Del Esposte and Eduardo Zambom Santana
+% Portions of the example contents: Arthur Del Esposte
+% This file is distributed under the MIT Licence
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PREÂMBULO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% A língua padrão é a última citada
+\documentclass[
+  xcolor={hyperref,svgnames,x11names,table},
+  hyperref={pdfencoding=unicode,plainpages=false,pdfpagelabels=true,breaklinks=true},
+  brazilian, english
+]{beamer}
+
+% Vários pacotes e opções de configuração genéricos
+\input{extras/basics}
+\input{extras/languages}
+\input{extras/fonts}
+\input{extras/floats}
+\input{extras/index}
+\input{extras/bibconfig}
+\input{extras/hyperlinks}
+\hidelinks % desabilita cor/sublinhado dos links (URLs, refs etc.)
+\input{extras/source-code}
+\input{extras/utils}
+
+% Diretórios onde estão as figuras; com isso, não é preciso colocar o caminho
+% completo em \includegraphics (e nem a extensão).
+\graphicspath{{figuras/},{logos/}}
+
+% Comandos rápidos para mudar de língua:
+% \en -> muda para o inglês
+% \br -> muda para o português
+% \texten{blah} -> o texto "blah" é em inglês
+% \textbr{blah} -> o texto "blah" é em português
+\babeltags{br = brazilian, en = english}
+
+% Espaçamento simples
+\singlespacing
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% APARÊNCIA DO BEAMER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Possible paper sizes: a0, a0b, a1, a2, a3, a4.
+%% Possible orientations: portrait, landscape
+%% Font sizes can be changed using the scale option.
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage[size=a1,orientation=portrait,scale=1.8]{beamerposter}
+
+\usetheme{imeusp-poster} % carregado do diretório extras (veja basics.tex)
+
+% O padrão usa um tom de vermelho escuro como cor principal; a opção
+% "greeny" troca essa cor por um tom de verde; a opção "sandy" usa o
+% mesmo tom de verde mas modifica a cor padrão dos blocos para um tom
+% amarelado. "bluey" usa as cores do manual de identidade visual do IME.
+\usecolortheme[bluey]{imeusp} % carregado do diretório extras (veja basics.tex)
+
+%Remove ícones de navegação
+\beamertemplatenavigationsymbolsempty
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%% COMANDOS PARA O USUÁRIO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Medidas feitas "a olho"
+\newcommand\singlecol{\column{.963\textwidth}}
+\newcommand\halfcol{\column{.48\textwidth}}
+\newcommand\onethirdcol{\column{.2922\textwidth}}
+\newcommand\twothirdscol{\column{.626\textwidth}}
+\newcommand\onefourthcol{\column{.2084\textwidth}}
+
+% Blocos de cor personalizada
+\newenvironment{coloredblock}[2]%
+  {
+    \setbeamercolor{block title}{fg=white,bg=#1!80!white}
+    \setbeamercolor{block body}{fg=darkgray,bg=#1!20!white}
+    \setbeamercolor{local structure}{fg=darkgray,bg=#1!20!white}
+    \begin{block}{#2}
+  }
+  {\end{block}}
+
+% Bibliografia. Apenas estilos bibliográficos derivados de numeric,
+% alphabetic, authortitle e authoryear (como beamer-ime) vão funcionar
+% bem aqui! Outros estilos, como abnt ou apa, vão gerar problemas de
+% layout que você vai precisar ajustar manualmente. Observe que, num
+% poster ou apresentação, provavelmente é uma boa ideia usar apenas
+% \nocite e não \cite.
+\usepackage[
+  %style=extras/plainnat-ime, % variante de autor-data, similar a plainnat
+  %style=alphabetic, % similar a alpha
+  %style=numeric, % comum em artigos
+  %style=authoryear-comp, % autor-data "padrão" do biblatex
+  %style=apa, % variante de autor-data, muito usado
+  %style=abnt,
+  style=extras/beamer-ime,
+]{biblatex}
+
+% Num poster, a bibliografia pode ficar em tamanho menor
+\renewcommand*{\bibfont}{\footnotesize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% METADADOS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% O arquivo com os dados bibliográficos para biblatex; você pode usar
+% este comando mais de uma vez para acrescentar múltiplos arquivos
+\addbibresource{poster_refs.bib}
+
+% Este comando permite acrescentar itens à lista de referências sem incluir
+% uma referência de fato no texto (pode ser usado em qualquer lugar do texto)
+%\nocite{bronevetsky02,schmidt03:MSc, FSF:GNU-GPL, CORBA:spec, MenaChalco08}
+% Com este comando, todos os itens do arquivo .bib são incluídos na lista
+% de referências
+%\nocite{*}
+% \nocite{*}
+
+\title{Correção automática de redações do ENEM usando aprendizado de máquina}
+
+\author[mateuslatrova@usp.br, ddm@ime.usp.br, igorcs@ime.usp.br]{Mateus Latrova Stephanin, Orientadores: Prof. Dr. Dênis Deratani Mauá e Igor Cataneo Silveira}
+
+\institute{Instituto de Matemática e Estatística --- Universidade de São Paulo}
+
+\date{Dezembro, 2023}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INÍCIO DO POSTER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+% Em um poster não há \maketitle
+
+\begin{frame}[fragile]\centering
+
+% \vspace{-.5\baselineskip}
+
+\begin{columns}[T]
+
+  \halfcol
+
+  \begin{block}{Introdução}
+  \justifying
+        Avaliadores automáticos de redações são softwares que pontuam textos em linguagem natural com base em objetivos educacionais, oferecendo uma abordagem eficiente para auxiliar na aprendizagem, especialmente em exames padronizados como o ENEM. Tal tarefa pode ser enxergada pela lente da classificação automática de textos e abordada por técnicas de aprendizado de máquina.
+  \end{block}
+
+  \begin{block}{Objetivos}
+  \justifying
+       Este projeto de conclusão de curso investiga modelos de linguagem baseados em redes neurais profundas para avaliação automática de redações do ENEM. Seu foco é na segunda competência: "Compreensão da proposta de redação e aplicação de conceitos das várias áreas do conhecimento para o desenvolvimento do tema nos limites estruturais do texto dissertativo-argumentativo". Buscou-se implementar dois modelos para avaliá-la: um para detectar o desvio do tema proposto e outro para identificar se a redação é um aglomerado de palavras.\nocite{mec_correcao}
+  \end{block}
+
+  % \begin{block}{Conceitos e definições}
+  %   % Data Augmentation
+  %   % Rede neural
+  %   % Tarefa de Classificação de texto
+  %   % Conjunto de treinamento, validação e testes
+  %   % Intervalo de Confiança
+  
+  %     Fine-tuning
+  %     Perplexidade
+
+  % \end{block}
+
+  \begin{block}{Detecção de fuga ao tema}
+    \justifying
+        A fuga ao tema é o primeiro critério analisado em uma redação no contexto da competência 2, pois quando isso ocorre, ela recebe nota 0. Assim, nesse experimento buscou-se implementar uma rede neural que aprenda a relação entre o texto da redação e o texto do tema, ou seja, se é uma relação de abordagem ou de fuga. Para isso, essa rede trata um problema de classificação binária: ela recebe ambos os textos, e responde se a redação fugiu do tema ou não. Para a implementação dessa rede, utilizou-se um modelo BERT pré-treinado (BERTimbau) que transforma texto em embeddings, no qual foi feito um fine-tuning para essa tarefa de classificação. Na tabela 1 abaixo, pode-se observar duas métricas das predições do modelo após cada época de treinamento para os datasets de validação e de teste: acurácia e F1. \nocite{bertimbau} 
+        % \nocite{inep_enem_modulo4}
+                % Funcionamento: Passa-se o texto da redação para o modelo, e depois o do tema. Depois, concatenamos ambos os embeddings e passamos esse embedding concatenado para um classificador linear, que transformará o input de tamanho 1538 em um vetor de tamanho 2, do qual extrairemos a resposta.
+
+        \begin{table}[H]
+          \centering
+          \caption{Resultados nos datasets de validação e teste}
+          \begin{tabular}{cccccc}
+            \toprule
+            \textbf{Época} & \textbf{Ac. Validação} & \textbf{Ac. Teste} & \textbf{F1 Validação} & \textbf{F1 Teste} \\
+            \midrule
+            0 & 0.5051 & 0.5 & 0.6711 & 0.6667 \\
+            1 & 0.5051 & 0.5 & 0.6711 & 0.6667 \\
+            2 & 0.5051 & 0.5 & 0.6711 & 0.6667 \\
+            3 & 0.5051 & 0.5 & 0.6711 & 0.6667 \\
+            4 & 0.5657 & 0.5 & 0.6993 & 0.6667 \\
+            5 & 0.7879 & 0.7143 & 0.8205 & 0.7742 \\
+            6 & 0.7677 & 0.7653 & 0.7850 & 0.7890 \\
+            7 & 0.7879 & 0.7959 & 0.8073 & 0.8246 \\
+            8 & 0.7778 & 0.7755 & 0.7885 & 0.7925 \\
+            9 & 0.8283 & 0.8061 & 0.8468 & 0.8319 \\
+            10 & 0.8283 & 0.8061 & 0.8468 & 0.8319 \\
+            \bottomrule
+            \end{tabular}
+        \end{table}
+
+          % \begin{table}[H] % [H] é obrigatório com beamer!
+          %   \centering
+          %   \begin{tabular}{ccl}
+          %     \toprule
+          %     Code      & Abbreviation  & Name \\
+          %     \midrule
+          %     \texttt{A}  & Ala          & Alanine \\
+          %     \texttt{C}  & Cys          & Cysteine \\
+          %     \texttt{W}  & Trp          & Tryptophan \\
+          %     \texttt{Y}  & Tyr          & Tyrosine \\
+          %     \bottomrule
+          %   \end{tabular}
+          % \end{table}
+        
+  \end{block}
+
+  \halfcol
+
+  % \begin{block}{Cont.}
+  % \justifying
+  %   Um grande desafio aqui foi a pouca quantidade de dados: 385 redações, sendo que apenas 57 destas possuíam nota 0. Por conta disso, foi necessária a criação de dados artificiais, combinando redações boas com temas que elas não tinham nenhuma relação.
+
+  %   Resultados:
+
+  %   Tabela com acurácia e F1 ao longo das épocas
+
+  %   Matriz de confusão para o melhor modelo:
+
+  %   \centering
+  %       % Ajustando o tamanho para alinhar o final com a coluna ao lado
+  %       % \vspace{.8\baselineskip}
+  %       % \includegraphics[width=.5\textwidth,trim=0 0 70 0,clip]{ime-logo}\par
+  %       % \vspace{.5\baselineskip}
+    
+  % \end{block}
+    
+    \begin{block}{Detecção de aglomerado de palavras}
+    \justifying
+    \nocite{jurafsky_slp3}
+    % Uma redação é considerada um aglomerado de palavras se ela for composta por palavras justapostas, ou seja, palavras que, colocadas uma após a outra não constroem um significado necessariamente compreensível. Além disso, caso uma redação não tenha fugido do tema, o próximo critério a ser analisado é se a redação é um aglomerado de palavras, pois, dessa forma, ela ficará com a nota 1 para a competência 2 \nocite{Couprie2:2011}.
+
+    % Depois da fuga ao tema, o próximo critério a ser analisado é se a redação é um aglomerado de palavras, pois, dessa forma, ela ficará com a nota 1 na competência 2. Dessa forma,
+
+    \textbf{Definição 1 (Perplexidade; \cite{jurafsky_slp3})}
+
+    % A perplexidade(PPL) de um modelo de linguagem em um conjunto de teste é o inverso da probabilidade do conjunto, normalizada pelo número de palavras. 
+    Para um conjunto de teste $W = w_1w_2...w_N$:
+
+    \vspace{12pt}
+
+    \centering
+    $\text{PPL(W)} = \sqrt[N]{ \prod_{i=1}^{N} \frac{1}{P(w_1w_2...w_N)}}$
+
+    \vspace{12pt}
+
+    \justifying
+    A hipótese levantada para esse experimento foi que, pelas características dos aglomerados, e também pela raridade da ocorrência de textos desse tipo, a probabilidade de que as palavras desses textos ocorram uma ao lado da outra é baixa. Portanto, a perplexidade desses textos deve ser alta. Tal hipó-
+
+    \begin{wrapfigure}{l}{0.5\textwidth} %this figure will be at the right
+    \includegraphics[width=0.8\textwidth]{figuras/perplexidade_media.png}
+    \caption{Perplexidade média}
+    \label{fig:perplexidade_media}
+    \end{wrapfigure}
+
+    tese foi confirmada após calcularmos a perplexidade de todas as redações utilizando um modelo BERTimbau pré-treinado. Como se pode observar na figura \ref{fig:perplexidade_media}, a perplexidade média das redações de nível 1 é significativamente maior do que as outras. Dessa forma,
+
+    % Assim, a fim de validar se a nossa hipótese era um bom caminho, utilizamos um modelo BERT (BERTimbau) pré-treinado para fazer o cálculo da perplexidade de cada redação do nosso dataset menor de redações, fizemos o seguinte gráfico: 
+    % Como se pode observar na figura 2 , na média, as redações de nota 1 possuem perplexidade maior do que as demais, o que vai ao encontro da hipótese, porém o seu desvio-padrão é o maior de todas as notas. Possivelmente, esse alto desvio-padrão vem do fato de que há outros critérios além do aglomerado de palavras que levam uma redação a receber a nota 1.
+    
+    \begin{wrapfigure}{l}{0.50\textwidth} %this figure will be at the right
+    \includegraphics[width=0.8\textwidth]{figuras/matriz_confusao_cluster.png}
+     \caption{Melhor resultado}
+    \label{fig:matriz_confusão}
+    \end{wrapfigure}
+
+      buscou-se encontrar um intervalo númerico de perplexidade dentro do qual todas as redações dentro dele seriam classificadas como aglomerados de palavras. Para isso, calculou-se diversos intervalos de confiança para as redações de nota 1, e o resultado do melhor intervalo encontrado pode ser observado na figura \ref{fig:matriz_confusão}, no qual houve uma acurácia de cerca de 50\% para aglomerados e 78\% para não aglomerados.
+    
+    % De qualquer forma, a fim de encontrar-se um limite inferior a partir do qual as redações seriam consideradas aglomerados de palavras, foram calculados intervalos de confiança de 75\%, 80\%, 85\% 90\% para as redações de nota 1 de dois datasets de redações. Para o dataset menor, o intervalo que trouxe uma melhor avaliação foi o de 75\% de confiança, enquanto que, para o dataset maior foi o de 90\%. Porém, os limites inferiores de ambos os intervalos convergiram para valores muito próximos. Dessa forma, foi escolhido o intervalo do maior dataset para ser usado na avaliação. 
+
+    % A fim de entender como foi o desempenho dessa estratégia em cada um dos possíveis casos, foi construída uma matriz de confusão:
+    
+    \end{block}
+
+  \begin{block}{Conclusão}
+  \justifying
+  % Em relação à detecção de fuga ao tema, pode-se observar que, mesmo com poucos dados reais, foi possível chegar a um resultado de 80\% de acurácia. 
+  % Tendo isso em vista, é possível que a estratégia de fine-tuning empregada é suficiente para ter uma boa avaliação a esse respeito, havendo apenas a necessidade de mais dados reais. Já sobre a detecção de aglomerado de palavras, pode-se dizer que a estratégia utilizada ainda precisa de refinamentos para obter um desempenho aceitável numa situação real, principalmente em relação às redações que são de fato aglomerados. Ainda assim, devido a ser um tipo de redação muito rara, com certeza essa estratégia também se beneficiaria de mais dados reais de aglomerados de palavras. 
+  
+  % Vale dizer também que essa estratégia, da forma que está, já ajudaria muito a dizer quais redações NÃO são aglomerados, pois vimos na matriz de confusão que sua acurácia para essas redações é bem maior do que para os aglomerados.
+  
+  % Dessa forma, a fim de acumular mais dados reais de redações do ENEM, seria muito interessante para ambas as estratégias a implementação de uma ferramenta que permita que estudantes enviem as suas redações e suas respectivas notas. Assim, os modelos aqui apresentados poderão trazer resultados mais próximos da realidade e, portanto, haverá uma maior chance de serem utilizados na correção real do ENEM, ou até mesmo na correção de redações dentro de plataformas preparatórias para o ENEM, ajudando os estudantes a terem um feedback mais ágil do seu desempenho nas redações.
+
+
+Na detecção de fuga ao tema, alcançamos 80\% de acurácia, indicando que a estratégia de fine-tuning é promissora, necessitando de mais dados reais. Para a detecção de aglomerado de palavras, a estratégia requer refinamentos para atingir um desempenho aceitável em situações reais, especialmente quando se trata redações que são de fato aglomerados. Implementar uma ferramenta que permita aos estudantes enviar redações e notas seria crucial para acumular dados reais do ENEM e proporcionar um melhor treinamento para ambos os modelos.
+
+% Esses modelos, assim refinados, podem ser valiosos na correção real do ENEM ou em plataformas preparatórias, proporcionando feedback ágil aos estudantes.
+  
+  \end{block}
+
+    \begin{block}{Referências}
+    \justifying
+        \printbibliography
+    \end{block}
+
+\end{columns}
+
+\end{frame}
+
+\end{document}
