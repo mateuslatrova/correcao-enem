@@ -224,3 +224,32 @@ class TopicDeviationFineTuner:
 
     def run_model_test(self):
         self.run_model_evaluation("test")
+
+    def show_metrics(self):
+        for split, metrics in self.metrics.items():
+            print(split)
+            for metric in metrics:
+                print(metric)
+
+    def plot_confusion_matrices(self, split):
+        for epoch, df in self.split_to_results_by_epoch[split].items():
+            title = f"Results for split {split} in epoch {epoch}"
+            self.plot_confusion_matrix(title, df)
+
+    def plot_confusion_matrix(self, title, df):
+        matrix = confusion_matrix(df["true_label"], df["predicted_label"])
+
+        plt.figure(figsize=(8, 6))
+        sns.set(font_scale=1.8)
+        sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", cbar=False)
+
+        plt.xlabel("Predicted")
+        plt.ylabel("Fugiu ao tema")
+        plt.title(title)
+
+        class_names = ["Negative", "Positive"]
+        tick_marks = [0.5, 1.5]
+        plt.xticks(tick_marks, class_names)
+        plt.yticks(tick_marks, class_names)
+
+        plt.show()
