@@ -1,28 +1,34 @@
 from collections import defaultdict
 
-from datasets import Dataset, DatasetDict
 import evaluate
-from transformers import (
-    AdamW,
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    DataCollatorWithPadding,
-    get_scheduler,
-)
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 import torch
+from datasets import Dataset, DatasetDict
+from sklearn.metrics import confusion_matrix
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
+from transformers import AdamW, AutoTokenizer, DataCollatorWithPadding, get_scheduler
+
+from correction.topic_deviation.neural_network import TopicDeviationNeuralNetwork
 
 
 class TopicDeviationFineTuner:
-    columns_to_remove_after_tokenization = ["essay_id", "essay_text", "topic_text", "topic_id"]
+    columns_to_remove_after_tokenization = [
+        "essay_id",
+        "essay_text",
+        "topic_text",
+        "topic_id",
+        "label",
+    ]
     datasets_format = "torch"
     original_label_column = "label"
     new_label_column = "labels"
     splits = ["test", "train", "validation"]
 
     def __init__(
-        self, checkpoint: str, datasets: DatasetDict, learning_rate: float = 5e-5, batch_size=8
+        self, checkpoint: str, datasets: DatasetDict, learning_rate: float = 5e-5, batch_size=4
     ) -> None:
         self.checkpoint = checkpoint
         self.datasets = datasets
@@ -30,53 +36,98 @@ class TopicDeviationFineTuner:
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint, do_lower_case=False)
         self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
-        self.model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=2)
-        self.optimizer = AdamW(self.model.parameters(), lr=learning_rate)
+        self.neural_network = TopicDeviationNeuralNetwork(self.checkpoint)
+        self.optimizer = AdamW(self.neural_network.parameters(), lr=learning_rate)
 
-        self.tokenized_datasets = self.get_tokenized_datasets()
-        self.data_loaders = self.get_data_loaders()
+        self.tokenized_essay_datasets = self.get_essay_tokenized_datasets()
+        self.tokenized_topic_datasets = self.get_topic_tokenized_datasets()
+
         self.metrics = defaultdict(list)
 
-    def get_tokenized_datasets(self):
-        tokenized_datasets = self.datasets.map(self.tokenize, batched=True)
+        self.split_to_results_by_epoch = {split: {} for split in self.splits}
 
-        tokenized_datasets = tokenized_datasets.remove_columns(
+    def get_essay_tokenized_datasets(self):
+        tokenized_essay_datasets = self.datasets.map(self.tokenize_essay, batched=True)
+
+        tokenized_essay_datasets = tokenized_essay_datasets.remove_columns(
             self.columns_to_remove_after_tokenization
         )
-        tokenized_datasets = tokenized_datasets.rename_column(
-            self.original_label_column, self.new_label_column
+
+        tokenized_essay_datasets.set_format(self.datasets_format)
+        return tokenized_essay_datasets
+
+    def get_topic_tokenized_datasets(self):
+        tokenized_topic_datasets = self.datasets.map(self.tokenize_topic, batched=True)
+
+        tokenized_topic_datasets = tokenized_topic_datasets.remove_columns(
+            self.columns_to_remove_after_tokenization
         )
 
-        tokenized_datasets.set_format(self.datasets_format)
-        return tokenized_datasets
+        tokenized_topic_datasets.set_format(self.datasets_format)
+        return tokenized_topic_datasets
 
-    def tokenize(self, example):
+    def tokenize_essay(self, example):
         return self.tokenizer(
             example["essay_text"],
-            example["topic_text"],
             truncation=True,
+            padding=True,
             max_length=512,
             add_special_tokens=True,
             return_tensors="pt",
         )
 
-    def get_data_loaders(self):
+    def tokenize_topic(self, example):
+        return self.tokenizer(
+            example["topic_text"],
+            truncation=True,
+            padding=True,
+            max_length=512,
+            add_special_tokens=True,
+            return_tensors="pt",
+        )
+
+    def get_data_loaders(self, datasets: DatasetDict):
         data_loaders = {}
 
         for split in self.splits:
             data_loaders[split] = DataLoader(
-                self.tokenized_datasets[split],
-                shuffle=True,
+                datasets[split],
                 batch_size=self.batch_size,
                 collate_fn=self.data_collator,
             )
 
         return data_loaders
 
-    def run_model_training(self, num_epochs: int = 3):
-        train_dataloader = self.data_loaders["train"]
+    def get_label_data_loader(self, datasets: DatasetDict):
+        data_loaders = {}
+        labels_datasets = DatasetDict()
 
-        num_training_steps = num_epochs * len(train_dataloader)
+        for split in self.splits:
+            split_data = datasets[split]
+            label_column = split_data[self.original_label_column]
+
+            new_dataset = Dataset.from_dict({self.original_label_column: label_column})
+
+            labels_datasets[split] = new_dataset
+
+        labels_datasets = labels_datasets.rename_column(
+            self.original_label_column, self.new_label_column
+        )
+
+        for split in self.splits:
+            data_loaders[split] = DataLoader(
+                labels_datasets[split],
+                batch_size=self.batch_size,
+            )
+
+        return data_loaders
+
+    def run_model_training(self, num_epochs: int = 3):
+        essay_train_dataloader = self.get_data_loaders(self.tokenized_essay_datasets)["train"]
+        topic_train_dataloader = self.get_data_loaders(self.tokenized_topic_datasets)["train"]
+        label_train_dataloader = self.get_label_data_loader(self.datasets)["train"]
+
+        num_training_steps = num_epochs * len(essay_train_dataloader)
 
         self.learning_scheduler = get_scheduler(
             "linear",
@@ -86,54 +137,90 @@ class TopicDeviationFineTuner:
         )
 
         device = self.get_current_device()
-        self.set_model_device(device)
+        self.set_neural_network_device(device)
 
         self.train_progress_bar = tqdm(range(num_training_steps))
 
         for epoch in range(num_epochs):
-            # Training loop:
-            self.model.train()
-            for batch in train_dataloader:
-                batch = {k: v.to(device) for k, v in batch.items()}
-                self.train_model_for_batch(batch)
+            self.neural_network.train()
 
-            # Validation loop:
-            self.run_model_evaluation("validation")
+            essays_iterator = iter(essay_train_dataloader)
+            topics_iterator = iter(topic_train_dataloader)
+            labels_iterator = iter(label_train_dataloader)
 
-    def set_model_device(self, device):
-        self.model.to(device)
+            dataloaders = zip(essays_iterator, topics_iterator, labels_iterator)
+
+            accumulation_steps = 4
+
+            for essay_batch, topic_batch, label_batch in dataloaders:
+                essay_batch = {k: v.to(device) for k, v in essay_batch.items()}
+                topic_batch = {k: v.to(device) for k, v in topic_batch.items()}
+                label_batch = {k: v.to(device) for k, v in label_batch.items()}
+
+                outputs = self.neural_network(essay_batch, topic_batch, label_batch)
+
+                loss = outputs["loss"]
+                loss.backward()
+
+                # Perform optimization step after accumulation_steps batches
+                if self.train_progress_bar.n % accumulation_steps == 0:
+                    self.optimizer.step()
+                    self.learning_scheduler.step()
+                    self.optimizer.zero_grad()
+
+                self.train_progress_bar.update(1)
+
+            self.run_model_evaluation("validation", epoch)
+            self.run_model_evaluation("test", epoch)
+
+    def set_neural_network_device(self, device):
+        self.neural_network.to(device)
 
     def get_current_device(self):
         return torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    def train_model_for_batch(self, batch):
-        outputs = self.model(**batch)
-        loss = outputs.loss
-        loss.backward()
-
-        self.optimizer.step()
-        self.learning_scheduler.step()
-        self.optimizer.zero_grad()
-        self.train_progress_bar.update(1)
-
-    def run_model_evaluation(self, split: str):
-        dataloader = self.data_loaders[split]
-
+    def run_model_evaluation(self, split: str, epoch=None):
         device = self.get_current_device()
-        self.set_model_device(device)
+        self.set_neural_network_device(device)
 
-        self.model.eval()
+        self.neural_network.eval()
         metric = evaluate.load("glue", "mrpc")
-        for batch in dataloader:
-            batch = {k: v.to(device) for k, v in batch.items()}
-            with torch.no_grad():
-                outputs = self.model(**batch)
 
-            logits = outputs.logits
+        essay_train_dataloader = self.get_data_loaders(self.tokenized_essay_datasets)[split]
+        topic_train_dataloader = self.get_data_loaders(self.tokenized_topic_datasets)[split]
+        label_train_dataloader = self.get_label_data_loader(self.datasets)[split]
+
+        essays_iterator = iter(essay_train_dataloader)
+        topics_iterator = iter(topic_train_dataloader)
+        labels_iterator = iter(label_train_dataloader)
+
+        dataloaders = zip(essays_iterator, topics_iterator, labels_iterator)
+
+        true_labels = []
+        predicted_labels = []
+
+        for essay_batch, topic_batch, label_batch in dataloaders:
+            essay_batch = {k: v.to(device) for k, v in essay_batch.items()}
+            topic_batch = {k: v.to(device) for k, v in topic_batch.items()}
+
+            with torch.no_grad():
+                outputs = self.neural_network(essay_batch, topic_batch)
+
+            logits = outputs["logits"]
             predictions = torch.argmax(logits, dim=-1)
-            metric.add_batch(predictions=predictions, references=batch[self.new_label_column])
+
+            metric.add_batch(predictions=predictions, references=label_batch["labels"])
+
+            true_labels.extend(label_batch["labels"].tolist())
+            predicted_labels.extend(predictions.cpu().tolist())
 
         self.metrics[split].append(metric.compute())
+        if epoch is not None:
+            self.metrics[split][-1]["epoch"] = epoch
+
+        df = pd.DataFrame({"true_label": true_labels, "predicted_label": predicted_labels})
+
+        self.split_to_results_by_epoch[split][epoch] = df
 
     def run_model_test(self):
         self.run_model_evaluation("test")
