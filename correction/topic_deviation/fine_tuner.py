@@ -150,7 +150,7 @@ class TopicDeviationFineTuner:
 
             dataloaders = zip(essays_iterator, topics_iterator, labels_iterator)
 
-            accumulation_steps = 4
+            accumulation_steps = 8
 
             for essay_batch, topic_batch, label_batch in dataloaders:
                 essay_batch = {k: v.to(device) for k, v in essay_batch.items()}
